@@ -1,0 +1,40 @@
+  ? def loadModule := <import:org.cubik.cle.module.loadModule>
+  # value: <loadModule>
+  
+To use a module, it must be _loaded_ and then _instantiated_.
+
+XXX 'load' is a bad choice of word for this
+
+  ? def testModule := loadModule(<file:modules/test1/>)
+  # value: <module test-1>
+  
+  ? def instance := testModule.run([].asMap())
+  # value: <moduleInstance>
+  
+  ? def scopeTester := instance["scopeTester"]
+  # value: <scopeTester>
+  
+  ? [def r := scopeTester.getLoader(), r == instance]
+  # value: [<moduleInstance>, true]
+  XXX this will become false as soon as we implement internal names
+
+There will eventually be options relating to how changes in the filesystem affect the module.
+
+
+
+
+
+development notes:
+
+florbs
+  filesystem rep: emakers, resources, and a metadata file (in E, or not?)
+  metadata file records dependencies, and what names are imported from each
+  resources are importable things; florb can extend file->object mapping?
+
+To use a florb:
+  makeFlorb(<file:///florbs/myFlorb/>) => florb, must have no dependencies
+  makeFlorbLoader(file:///florbs/>)["myFlorb"] => florb, with dependencies loaded from same directory
+  florb has a loader interface (get,optUnget), optional getRootObject when that makes sense, and possibly iteration
+
+
+which is primary: files or objects?

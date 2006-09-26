@@ -1,0 +1,6 @@
+pragma.enable("easy-return")
+pragma.disable("explicit-result-guard")
+
+def scopeTester {
+  to getLoader() { return <local> }
+}

@@ -1,0 +1,38 @@
+pragma.enable("easy-return")
+pragma.disable("explicit-result-guard")
+
+def termParser := <import:org.quasiliteral.term.makeTermParser>
+def eParser := <import:org.erights.e.elang.syntax.makeEParser>
+
+def loadModule {
+  to run(moduleRoot) {
+    
+    def metaTerm := termParser(moduleRoot["module..eterm"].getTwine())
+    
+    def term`module(name(.String.@{moduleName :String}))` := metaTerm
+    
+    def moduleRep {
+      to __printOn(out :TextWriter) {
+        out.print("<module ", moduleName, ">")
+      }
+      
+      to run(importMap :Map) {
+        require(importMap.size() == 0)
+        
+        def moduleInstance
+        
+        def [localResolver, moduleScope] := e`def <local>`.evalToPair(safeScope)
+        localResolver.resolve(moduleInstance)
+        
+        return bind moduleInstance := {def moduleInstance {
+          to get(dotName :String) {
+            def sourceFile := moduleRoot[dotName.replaceAll(".", "/") + ".emaker"]
+            return eParser(sourceFile.getTwine()).eval(moduleScope)
+          }
+        }}
+      }
+    }
+    
+    return moduleRep
+  }
+}
