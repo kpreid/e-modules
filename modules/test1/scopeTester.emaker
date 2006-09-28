@@ -1,3 +1,5 @@
+# First line of scopeTester.emaker
+
 pragma.enable("easy-return")
 pragma.disable("explicit-result-guard")
 

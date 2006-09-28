@@ -16,6 +16,10 @@ def loadModule {
         out.print("<module ", moduleName, ">")
       }
       
+      to get(subpath :String) {
+        return moduleRoot[subpath].deepReadOnly()
+      }
+      
       to run(importMap :Map) {
         require(importMap.size() == 0)
         
