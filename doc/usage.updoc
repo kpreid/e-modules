@@ -1,16 +1,19 @@
+
+  ? def moduleFromFile := <import:org.cubik.cle.module.moduleFromFile>
+  # value: <moduleFromFile>
+
   ? def loadModule := <import:org.cubik.cle.module.loadModule>
   # value: <loadModule>
   
-To use a module, it must be _loaded_ and then _instantiated_.
+To use a module, you must acquire a module object, then load it. The result of loading is called a module instance.
 
-XXX 'load' is a bad choice of word for this
+XXX review terms 'load' and 'module instance'
 
-  ? def testModule := loadModule(<file:modules/test1/>)
-  # value: <module test-1>
+  ? def testModule := moduleFromFile(<file:modules/test1/>); null
   
 There will eventually be options relating to how changes in the filesystem affect the module.
 
-  ? def instance := testModule.run([].asMap())
+  ? def instance := loadModule(testModule, [].asMap())
   # value: <moduleInstance>
   
   ? def scopeTester := instance["scopeTester"]

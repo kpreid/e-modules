@@ -1,0 +1,29 @@
+pragma.enable("easy-return")
+pragma.disable("explicit-result-guard")
+
+def termParser := <import:org.quasiliteral.term.makeTermParser>
+
+def moduleFromFile {
+  to run(moduleRoot) {
+    
+    def metaTerm := termParser(moduleRoot["module..eterm"].getTwine())
+    
+    def term`module(name(.String.@{moduleName :String}))` := metaTerm
+    
+    def moduleRep {
+      to __printOn(out :TextWriter) {
+        out.print("<module ", moduleName, " from ", moduleRoot, ">")
+      }
+      
+      /** XXX there may be eventually a split between module-directory-format info and module loading info */
+      to getMetaTerm() { return metaTerm }
+      
+      /** XXX interface to be reviewed; this is taking file subpaths. */
+      to get(subpath :String) {
+        return moduleRoot[subpath].deepReadOnly()
+      }
+          }
+    
+    return moduleRep
+  }
+}
