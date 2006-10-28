@@ -22,7 +22,7 @@ def moduleFromFile {
       to get(subpath :String) {
         return moduleRoot[subpath].deepReadOnly()
       }
-          }
+    }
     
     return moduleRep
   }
