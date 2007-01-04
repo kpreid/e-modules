@@ -3,23 +3,52 @@ pragma.disable("explicit-result-guard")
 
 def eParser := <import:org.erights.e.elang.syntax.makeEParser>
 
+def <modules> := <import>[{def mqn := meta.context().getFQNPrefix().split("$")[0].split(".")
+                           ".".rjoin(mqn(0, mqn.size() - 1)) + ".*"}]
+
+def parseMetaTerm := <modules:parseMetaTerm>
+
 def loadModule {
   to run(modul, importMap :Map) {
     require(importMap.size() == 0)
     
-    def metaTerm := modul.getMetaTerm()
-    
-    def term`module(name(.String.@{moduleName :String}))` := metaTerm
+    def [=> moduleName,
+         => immediates] := parseMetaTerm(modul.getMetaTerm())
     
     def moduleInstance
     
     def [localResolver, moduleScope] := e`def <local>`.evalToPair(safeScope)
     localResolver.resolve(moduleInstance)
     
+    def plainLoad(dotName :String) {
+      def sourceFile := modul[dotName.replaceAll(".", "/") + ".emaker"]
+      return eParser(sourceFile.getTwine()).eval(moduleScope)
+    }
+    
+    def loaded := [].asMap().diverge()
+    
+    def cacheLoad(name :String) {
+      return loaded.fetch(name, fn {
+        loaded[name] := plainLoad(name)
+      })
+    }
+    
+    def explicitDefinitions := {
+      def flex := [].asMap().diverge()
+      for sourceName => bindings in immediates {
+        def source := plainLoad(sourceName)
+        for exportName => sourceKey in bindings {
+          flex[exportName] := source.fetch(sourceKey, fn {
+            throw(`module ${E.toQuote(modul)} claimed component ${E.toQuote(sourceName)} would export ${E.toQuote(sourceKey)}, but it didn't`)
+          })
+        }
+      }
+      flex.snapshot()
+    }
+    
     return bind moduleInstance := {def moduleInstance {
       to get(dotName :String) {
-        def sourceFile := modul[dotName.replaceAll(".", "/") + ".emaker"]
-        return eParser(sourceFile.getTwine()).eval(moduleScope)
+        return explicitDefinitions.fetch(dotName, fn { plainLoad(dotName) })
       }
     }}
   }

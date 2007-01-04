@@ -1,24 +1,21 @@
 pragma.enable("easy-return")
 pragma.disable("explicit-result-guard")
 
-def termParser := <import:org.quasiliteral.term.makeTermParser>
+def Term := <type:org.quasiliteral.term.Term>
 
 def <modules> := <import>[{def mqn := meta.context().getFQNPrefix().split("$")[0].split(".")
                            ".".rjoin(mqn(0, mqn.size() - 1)) + ".*"}]
 
 def parseMetaTerm := <modules:parseMetaTerm>
 
-def moduleFromFile {
-  # FUTURE: require moduleRoot to be read-only
-  to run(moduleRoot) {
-    
-    def metaTerm := termParser(moduleRoot["module..eterm"].getTwine())
-    
+def makeModule {
+  to run(metaTerm :Term, contents :Map[String, Twine]) {
+
     def [=> moduleName] | _ := parseMetaTerm(metaTerm)
     
     def moduleRep {
       to __printOn(out :TextWriter) {
-        out.print("<module ", moduleName, " from ", moduleRoot, ">")
+        out.print("<module ", moduleName, ">")
       }
       
       /** XXX there may be eventually a split between module-directory-format info and module loading info */
@@ -26,7 +23,11 @@ def moduleFromFile {
       
       /** XXX interface to be reviewed; this is taking file subpaths. */
       to get(subpath :String) {
-        return moduleRoot[subpath].deepReadOnly()
+        def text := contents[subpath]
+        return def virtualFile {
+          to getText()  { return text.bare() }
+          to getTwine() { return text }
+        }
       }
     }
     

@@ -1,0 +1,38 @@
+  ? pragma.syntax("0.9")
+
+  ? def makeModule := <import:org.cubik.cle.module.makeModule>
+  # value: <makeModule>
+  
+  ? def loadModule := <import:org.cubik.cle.module.loadModule>
+  # value: <loadModule>
+  
+  ? def loadMake(d,c) :any { return loadModule(makeModule(d, c), [].asMap()) }
+  
+Code in a module may export names in two ways (by default): by returning the value (classic emaker style), or by returning a map containing several names.
+
+In the latter case, the module description must explicitly list the names.
+
+  ? def moduleI := loadMake(
+  >   term`module(name("mapExportTest1"),
+  >               exportFrom("foo", "a", "b"))`,
+  >   ["foo.emaker" => e`["a" => 1, "b" => 2]`.asText()])
+  # value: <moduleInstance>
+
+exportFrom's first parameter is the component to fetch from, and further parameters are the names to put into the module's exports. Later, there will be a provision for renaming.
+
+The consequences of a name beginning with "&" are not yet defined.
+
+The consequences of the component returning an object other than a ConstMap are not yet defined.
+
+  ? moduleI["a"]
+  # value: 1
+
+Any components named in exportFrom declarations will be loaded once when the module is instantiated; it is an immediate error if they do not provide values for the names listed.
+
+  ? def moduleI := loadMake(
+  >   term`module(name("mapExportTest2"),
+  >               exportFrom("foo", "a", "b"))`,
+  >   ["foo.emaker" => e`["a" => 1]`.asText()])
+  # problem: module <module mapExportTest2> claimed component "foo" would export "b", but it didn't
+
+I had originally planned to make this error lazy, but it now seems to me that for simplicity and load-timing sanity (given that loaded modules aren't necessarily confined) it will happen at load time.
