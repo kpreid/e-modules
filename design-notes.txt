@@ -1,0 +1,37 @@
+
+original development notes. "Florb" was a placeholder word resulting from arguments over what exactly a "module" is.
+
+florbs
+  filesystem rep: emakers, resources, and a metadata file (in E, or not?)
+  metadata file records dependencies, and what names are imported from each
+  resources are importable things; florb can extend file->object mapping?
+
+To use a florb:
+  makeFlorb(<file:///florbs/myFlorb/>) => florb, must have no dependencies
+  makeFlorbLoader(file:///florbs/>)["myFlorb"] => florb, with dependencies loaded from same directory
+  florb has a loader interface (get,optUnget), optional getRootObject when that makes sense, and possibly iteration
+
+
+which is primary: files or objects?
+
+
+Issues.
+
+  - Can a module instance be provided with authorities at load? What consequences does this have for multiple dependencies on a module?
+  
+  - Can a module instance have state?
+
+  - If some module named A has already been loaded, how does one specify during loading B that if it depends on A the existing A should be used?
+
+
+Downloading plan:
+
+Modules are designated by URIs, usually by reliable URLs (e.g. httpsy).
+
+If there is only one version of a module, then retrieving (GET) that URL gives you the module archive. (We need to define standard module archive formats. zip/jar is an obvious choice; a single-file textual format might also be interesting.)
+
+If there are multiple versions, you get a document (XXX specify format) which describes the available versions.
+
+For ultra-nice-HTTP-usage, the multiple-version response MAY be 300 Multiple Choices rather than 200 OK.
+
+We need a version, i.e. compatibility-description, system.

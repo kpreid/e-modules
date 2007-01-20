@@ -25,22 +25,4 @@ There will eventually be options relating to how changes in the filesystem affec
 
   ? testModule["scopeTester.emaker"].getText().split("\n")[0]
   # value: "# First line of scopeTester.emaker"
-  
-
-
-
-
-development notes:
-
-florbs
-  filesystem rep: emakers, resources, and a metadata file (in E, or not?)
-  metadata file records dependencies, and what names are imported from each
-  resources are importable things; florb can extend file->object mapping?
-
-To use a florb:
-  makeFlorb(<file:///florbs/myFlorb/>) => florb, must have no dependencies
-  makeFlorbLoader(file:///florbs/>)["myFlorb"] => florb, with dependencies loaded from same directory
-  florb has a loader interface (get,optUnget), optional getRootObject when that makes sense, and possibly iteration
-
-
-which is primary: files or objects?
+ 
