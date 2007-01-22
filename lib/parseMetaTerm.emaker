@@ -23,6 +23,14 @@ def parseMetaTerm(metaTerm) {
       }
     }
     match term`exportFrom(@_*)` { throw("Malformed exportFrom declaration") }
+    match term`once(.String.@{components :List[String]}*)` {
+      for component in components {
+        immediatesFlex.fetch(component, fn {
+          immediatesFlex[component] := [].asMap().diverge() 
+        })
+      }
+    }
+    match term`once(@_*)` { throw("Malformed once declaration") }
   }}
   
   require(Ref.isResolved(moduleName), fn{ `$where: no module name declared` })

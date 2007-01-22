@@ -28,15 +28,17 @@ def loadModule {
     def loaded := [].asMap().diverge()
     
     def cacheLoad(name :String) {
-      return loaded.fetch(name, fn {
-        loaded[name] := plainLoad(name)
-      })
+      return loaded.fetch(name, fn { loaded[name] := plainLoad(name) })
+    }
+    
+    def getOrLoad(name :String) {
+      return loaded.fetch(name, fn { plainLoad(name) })
     }
     
     def explicitDefinitions := {
       def flex := [].asMap().diverge()
       for sourceName => bindings in immediates {
-        def source := plainLoad(sourceName)
+        def source := cacheLoad(sourceName)
         for exportName => sourceKey in bindings {
           flex[exportName] := source.fetch(sourceKey, fn {
             throw(`module ${E.toQuote(modul)} claimed component ${E.toQuote(sourceName)} would export ${E.toQuote(sourceKey)}, but it didn't`)
@@ -48,7 +50,7 @@ def loadModule {
     
     return bind moduleInstance := {def moduleInstance {
       to get(dotName :String) {
-        return explicitDefinitions.fetch(dotName, fn { plainLoad(dotName) })
+        return explicitDefinitions.fetch(dotName, fn { getOrLoad(dotName) })
       }
     }}
   }
