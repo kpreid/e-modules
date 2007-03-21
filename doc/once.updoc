@@ -1,0 +1,25 @@
+  ? pragma.syntax("0.9")
+
+  ? def makeModule := <import:org.cubik.cle.module.makeModule>
+  # value: <makeModule>
+  
+  ? def loadModule := <import:org.cubik.cle.module.loadModule>
+  # value: <loadModule>
+  
+  ? def loadMake(d,c) :any { return loadModule(makeModule(d, c), [].asMap()) }
+  
+In order to support modules which need there to be only one of something, e.g. an interface stamp, for that module, the "once" declaration indicates that the specified components shall be loaded exactly once at module load time.
+
+Once possible, the value of the component shall be required to be DeepFrozen.
+
+  ? def moduleI := loadMake(
+  >   term`module(name("onceTest1"),
+  >               once("foo"))`,
+  >   ["foo.emaker" => e`def thing {}`.asText()])
+  # value: <moduleInstance>
+
+  ? moduleI["foo"]
+  # value: <thing>
+
+  ? moduleI["foo"] == moduleI["foo"]
+  # value: true
