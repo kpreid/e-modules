@@ -3,12 +3,24 @@ pragma.enable("accumulator")
 
 # XXX ejector for failures
 
+def parseComponentSpec(spec) {
+  switch (spec) {
+    match term`.String.@{name :String}` {
+      return [name]
+    }
+    match term`type("emaker")` {
+      return [spec] # XXX kludge
+    }
+  }
+}
+
 def parseMetaTerm(metaTerm) {
   def where := metaTerm.getOptSpan()
   def term`module(@decls*)` := metaTerm
 
   def moduleName
   def immediatesFlex := [].asMap().diverge()
+  var lazies := [].asSet()
   
   for decl in decls { switch (decl) {
     match term`name(.String.@{n :String})` { bind moduleName := n }
@@ -23,14 +35,25 @@ def parseMetaTerm(metaTerm) {
       }
     }
     match term`exportFrom(@_*)` { throw("Malformed exportFrom declaration") }
-    match term`once(.String.@{components :List[String]}*)` {
-      for component in components {
-        immediatesFlex.fetch(component, fn {
-          immediatesFlex[component] := [].asMap().diverge() 
-        })
+    match term`when(@componentSpec, @policy)` {
+      def components := parseComponentSpec(componentSpec)
+      switch (policy) {
+        match term`always` {}
+        match term`lazy` {
+          for component in components {
+            lazies with= component
+          }
+        }
+        match term`load` {
+          for component in components {
+            immediatesFlex.fetch(component, fn {
+              immediatesFlex[component] := [].asMap().diverge() 
+            })
+          }
+        }
       }
     }
-    match term`once(@_*)` { throw("Malformed once declaration") }
+    match term`when(@_*)` { throw("Malformed when declaration") }
   }}
   
   require(Ref.isResolved(moduleName), fn{ `$where: no module name declared` })
@@ -38,5 +61,6 @@ def parseMetaTerm(metaTerm) {
   def immediates := accum [].asMap() for k => v in immediatesFlex { _.with(k, v.snapshot()) }
   
   return [=> moduleName,
-          => immediates]
+          => immediates,
+          => lazies]
 }

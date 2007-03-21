@@ -13,8 +13,9 @@ def loadModule {
     require(importMap.size() == 0)
     
     def [=> moduleName,
-         => immediates] := parseMetaTerm(modul.getMetaTerm())
-    
+         => immediates,
+         => lazies] := parseMetaTerm(modul.getMetaTerm())
+
     def moduleInstance
     
     def [localResolver, moduleScope] := e`def <local>`.evalToPair(safeScope)
@@ -50,7 +51,11 @@ def loadModule {
     
     return bind moduleInstance := {def moduleInstance {
       to get(dotName :String) {
-        return explicitDefinitions.fetch(dotName, fn { getOrLoad(dotName) })
+        return explicitDefinitions.fetch(dotName, fn {
+          (lazies.contains(dotName) ||
+           lazies.contains(term`type("emaker")`) # XXX kludge
+          ).pick(cacheLoad, getOrLoad).run(dotName)
+        })
       }
     }}
   }

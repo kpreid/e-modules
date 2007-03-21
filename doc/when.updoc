@@ -1,0 +1,57 @@
+  ? pragma.syntax("0.9")
+
+  ? def makeModule := <import:org.cubik.cle.module.makeModule>
+  # value: <makeModule>
+  
+  ? def loadModule := <import:org.cubik.cle.module.loadModule>
+  # value: <loadModule>
+  
+  ? def loadMake(d,c) :any { return loadModule(makeModule(d, c), [].asMap()) }
+
+The "when" declaration controls when specified components will be loaded. The first parameter is a component specifier, and the second is one of term`always`, term`lazy`, or term`load`. The default for emaker components is term`always`.
+
+term`always` specifies that the component should be loaded whenever it is retrieved. term`lazy` specifies that the component should be loaded the first time it is retrieved, and the same value used from then on. term`load` specifies that the component should be loaded when the module is.
+
+Once possible, the value of the component shall be required to be DeepFrozen in all cases except for term`always`.
+
+Component specifiers: This is a new idea and not yet integrated fully, but a component specifier is either a string naming a component or term`type(${typespec :String})` where typespec is currently a string for the file extension.
+
+  ? def moduleI := loadMake(
+  >   term`module(name("whenTest"),
+  >               when("foo", load),
+  >               when("bar", lazy),
+  >               when("baz", always))`,
+  >   ["foo.emaker" => e`def thing {}`.asText(),
+  >    "bar.emaker" => e`def spring {}`.asText(),
+  >    "baz.emaker" => e`def boring {}`.asText()])
+  # value: <moduleInstance>
+
+  ? moduleI["foo"]
+  # value: <thing>
+
+  ? moduleI["foo"] == moduleI["foo"]
+  # value: true
+
+  ? moduleI["bar"]
+  # value: <spring>
+
+  ? moduleI["bar"] == moduleI["bar"]
+  # value: true
+
+  ? moduleI["baz"]
+  # value: <boring>
+
+  ? moduleI["baz"] == moduleI["baz"]
+  # value: false
+
+XXX write tests exercising the difference between load and lazy
+
+  ? def moduleI := loadMake(
+  >   term`module(name("whenTypeTest"),
+  >               when(type("emaker"), lazy))`,
+  >   ["foo.emaker" => e`def thing {}`.asText()])
+  # value: <moduleInstance>
+
+  ? moduleI["foo"] == moduleI["foo"]
+  # value: true
+
